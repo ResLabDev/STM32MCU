@@ -87,12 +87,12 @@ static void SPI1_Init (void)
 	SPI_Handle_t SPIHandle;
 
 	// Configure SPI1
-	SPIHandle.p_SPIx 						= SPI1;
+	SPIHandle.p_SPIx 				= SPI1;
 	SPIHandle.SpiConfig.busConfig  	= SPI_BUSCONFIG_FD;
 
 	SPIHandle.SpiConfig.deviceMode	= SPI_DEVMODE_MASTER;
 	SPIHandle.SpiConfig.sclkSpeed	= SPI_SPEED_DIV8;
-	SPIHandle.SpiConfig.dff 		= SPI_DFFMODE_16BIT;
+	SPIHandle.SpiConfig.dff 		= SPI_DFFMODE_8BIT;
 	SPIHandle.SpiConfig.cpol 	  	= SPI_CPOLMODE_LOW;
 	SPIHandle.SpiConfig.cpha 	  	= SPI_CPHAMODE_LEAD;
 	SPIHandle.SpiConfig.ssm 		= SPI_SSMMODE_EN;

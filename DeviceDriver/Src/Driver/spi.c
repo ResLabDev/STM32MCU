@@ -228,18 +228,25 @@ void SPI_SendData (SPI_RegDef_t *p_SPI, uint8_t *p_TxBuffer, uint32_t len)
 		if (p_SPI->CR1 & (1 << SPI_CR1REG_DFF))
 		{
 			// 2 Bytes Data Frame Format
-			p_SPI->DR = *((uint16_t *)p_TxBuffer);
-			len--;
-			len--;
-			(uint16_t *)p_TxBuffer++;
+			if (len != 1)										// Avoid infinite loop in case of odd len value
+			{
+				p_SPI->DR = *((uint16_t *)p_TxBuffer);
+                len--;
+                p_TxBuffer++;
+			}
+			else
+            {
+				p_SPI->DR = (*((uint16_t *)p_TxBuffer)) & 0xff;	// Mask final character in case of odd len value
+            }
 		}
 		else
 		{
 			// 1 Byte Data Frame Format
 			p_SPI->DR = *p_TxBuffer;
-			len--;
-			p_TxBuffer++;
 		}
+
+		len--;
+		p_TxBuffer++;
 	}
 }
 
