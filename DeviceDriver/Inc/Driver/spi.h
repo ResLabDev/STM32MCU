@@ -23,6 +23,7 @@ typedef struct SPI_Config
 	uint8_t cpha;					// According to @SPI_CPHAMODE
 	uint8_t ssm;					// According to @SPI_SSMMODE
 	uint8_t ssi;					// According to @SPI_SSIMODE
+	uint8_t ssoe;					// According to @SPI_SSOEMODE
 } SPI_Config_t;
 
 typedef struct SPI_Handle
@@ -96,6 +97,15 @@ typedef struct SPI_Handle
  */
 #define SPI_SSIMODE_DI			0
 #define SPI_SSIMODE_EN			1
+
+/*
+ * @SPI_SSOEMODE
+ * 0: SS output is disabled in master mode and the cell can work in multimaster configuration
+ * 1: SS output is enabled in master mode and when the cell is enabled. The cell cannot work
+in a multimaster environment.
+ */
+#define SPI_SSOEMODE_DI			0
+#define SPI_SSOEMODE_EN			1
 
 
 // === API Functions ===

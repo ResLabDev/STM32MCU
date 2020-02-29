@@ -29,6 +29,7 @@
 // === Public API Functions ===
 //
 void SPI_Test_SendData (uint16_t cycle);
+void SPI_Test_ReceiveData (void);
 
 #endif /* SPI_TEST_H_ */
 

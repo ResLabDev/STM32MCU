@@ -233,6 +233,7 @@ typedef struct SYSCFG_RegDef
 #define SPI_CR1REG_RXONLY		10		// Receive only mode enable
 #define SPI_CR1REG_DFF			11		// Data frame format
 #define SPI_CR1REG_BIDIMODE		15		// Bidirectional data mode enable
+#define SPI_CR2REG_SSOE			2		// SS output enable
 #define SPI_SR_RXNE				0		// Receive buffer not empty flag
 #define SPI_SR_TXE				1		// Transmit buffer empty flag
 #define SPI_SR_BSY				7		// Busy flag

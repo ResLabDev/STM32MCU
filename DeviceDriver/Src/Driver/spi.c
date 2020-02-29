@@ -111,51 +111,58 @@ void SPI_PeriClockControl (SPI_RegDef_t *p_SPI, uint8_t enable)
 */
 void SPI_Init (SPI_Handle_t *p_SPIhandle)
 {
-	uint32_t cr1Reg = 0;
+	uint32_t configReg = 0;
 
 	// 0. Enable SPI Periphery Clock
 	SPI_PeriClockControl(p_SPIhandle->p_SPIx, ENABLE);
 
 	// 1. Configure Device Mode (Master / Slave)
-	cr1Reg |= (p_SPIhandle->SpiConfig.deviceMode & 1) << SPI_CR1REG_MSTR;
+	configReg |= (p_SPIhandle->SpiConfig.deviceMode & 1) << SPI_CR1REG_MSTR;
 
 	// 2. Configure the Bus
 	switch (p_SPIhandle->SpiConfig.busConfig)
 	{
 		case SPI_BUSCONFIG_FD:														// Full-duplex
-			cr1Reg &= ~(1 << SPI_CR1REG_BIDIMODE);		// Clear BIDIMODE
+			configReg &= ~(1 << SPI_CR1REG_BIDIMODE);		// Clear BIDIMODE
 			break;
 		case SPI_BUSCONFIG_HD:														// Half-duplex
-			cr1Reg |= (1 << SPI_CR1REG_BIDIMODE);		// Set BIDIMODE
+			configReg |= (1 << SPI_CR1REG_BIDIMODE);		// Set BIDIMODE
 			break;
 		case SPI_BUSCONFIG_SRX:														// Simplex, Rx only
-			cr1Reg &= ~(1 << SPI_CR1REG_BIDIMODE);		// Clear BIDIMODE
-			cr1Reg |= (1 << SPI_CR1REG_RXONLY);			// Set RXONLY
+			configReg &= ~(1 << SPI_CR1REG_BIDIMODE);		// Clear BIDIMODE
+			configReg |= (1 << SPI_CR1REG_RXONLY);			// Set RXONLY
 			break;
 		default:
 			break;
 	}
 
 	// 3. Configure SPI Serial Clock speed (Baud Rate)
-	cr1Reg |= (p_SPIhandle->SpiConfig.sclkSpeed & 0xf) << SPI_CR1REG_BR;
+	configReg |= (p_SPIhandle->SpiConfig.sclkSpeed & 0xf) << SPI_CR1REG_BR;
 
 	// 4. Configure SPI Data Frame Format
-	cr1Reg |= (p_SPIhandle->SpiConfig.dff & 1) << SPI_CR1REG_DFF;
+	configReg |= (p_SPIhandle->SpiConfig.dff & 1) << SPI_CR1REG_DFF;
 
 	// 5. Configure SPI Clock Polarity
-	cr1Reg |= (p_SPIhandle->SpiConfig.cpol & 1) << SPI_CR1REG_CPOL;
+	configReg |= (p_SPIhandle->SpiConfig.cpol & 1) << SPI_CR1REG_CPOL;
 
 	// 6. Configure SPI  Clock Phase
-	cr1Reg |= (p_SPIhandle->SpiConfig.cpha & 1) << SPI_CR1REG_CPHA;
+	configReg |= (p_SPIhandle->SpiConfig.cpha & 1) << SPI_CR1REG_CPHA;
 
 	// 7. Configure SPI Slave Software Management
-	cr1Reg |= (p_SPIhandle->SpiConfig.ssm & 1) << SPI_CR1REG_SSM;
+	configReg |= (p_SPIhandle->SpiConfig.ssm & 1) << SPI_CR1REG_SSM;
 
 	// 8. Configure SPI Internal Slave Select
-	cr1Reg |= (p_SPIhandle->SpiConfig.ssi & 1) << SPI_CR1REG_SSI;
+	configReg |= (p_SPIhandle->SpiConfig.ssi & 1) << SPI_CR1REG_SSI;
 
-	// Save config in SPI CR1 register
-	p_SPIhandle->p_SPIx->CR1 = cr1Reg;
+	// === Save config in SPI CR1 register ===
+	p_SPIhandle->p_SPIx->CR1 = configReg;
+
+	configReg = 0;
+	// 9. Configure SPI SS output enable
+	configReg |= (p_SPIhandle->SpiConfig.ssoe & 1) << SPI_CR2REG_SSOE;
+
+	// === Save config in SPI CR2 register ===
+	p_SPIhandle->p_SPIx->CR2 = configReg;
 }
 
 /*!
@@ -228,7 +235,7 @@ void SPI_SendData (SPI_RegDef_t *p_SPI, uint8_t *p_TxBuffer, uint32_t len)
 		if (p_SPI->CR1 & (1 << SPI_CR1REG_DFF))
 		{
 			// 2 Bytes Data Frame Format
-			if (len != 1)										// Avoid infinite loop in case of odd len value
+			if (len > 1)										// Avoid infinite loop in case of odd len value
 			{
 				p_SPI->DR = *((uint16_t *)p_TxBuffer);
                 len--;

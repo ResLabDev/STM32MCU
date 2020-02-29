@@ -97,6 +97,7 @@ static void SPI1_Init (void)
 	SPIHandle.SpiConfig.cpha 	  	= SPI_CPHAMODE_LEAD;
 	SPIHandle.SpiConfig.ssm 		= SPI_SSMMODE_EN;
 	SPIHandle.SpiConfig.ssi 		= SPI_SSIMODE_EN;
+	SPIHandle.SpiConfig.ssoe		= SPI_SSOEMODE_EN;
 
 	SPI_Init(&SPIHandle);
 }
@@ -139,11 +140,41 @@ void SPI_Test_SendData (uint16_t cycle)
 	char buffer[] = "HELLO FROM SPI1";
 	while (cycle --> 0)
 	{
-		SPI_SendData(SPI1, (uint8_t *)buffer, strlen(buffer));
 		Delay(500000);
+		printf(" $ Remaining cycle: %u.\n", cycle);
+		SPI_SendData(SPI1, (uint8_t *)buffer, strlen(buffer));
 	}
 
-	 printf(" $ SPI sending Bytes test is finished.\n");
+	// Closing the communication
+	SPI_PeripheralControl(SPI1, DISABLE);
+
+	printf(" $ SPI sending Bytes test is finished.\n");
 }
+
+//
+/*!
+ * @fn			- SPI_Test_SendData8
+ *
+ * @brief 		- Sending 1 Byte data on the SPI1 interface
+ *
+ * @param[in]	-
+ * @param[out]	- none
+ *
+ * @return 		- none
+ *
+ * @note		- PIN Alternate Function Mode: AF5
+ * 				  Nucleo F446RE Board
+ * 				  	 PA4: SPI1_NSS		=> do not use
+ * 				  11 PA5: SPI1_SCK
+ * 				  13 PA6: SPI1_MISO	=> do not use
+ * 				  15 PA7: SPI1_MOSI
+ * 				   9 GND
+ *
+*/
+void SPI_Test_ReceiveData (void)
+{
+
+}
+
 
 /*** EOF ***/
