@@ -15,8 +15,9 @@ int main(void)
 {
 	printf(" >> STM32 system is started.\n");
 
-	SPI_Test_SendData(1);
+	SPI_Test_ReceiveData (20);
 #if 0
+	SPI_Test_SendData(20);
 	GPIO_Test_ClockOut();
 	GPIO_Test_LedToggleNoIT(20);
 	GPIO_Test_LedToggleByButton();

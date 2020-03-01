@@ -16,6 +16,7 @@
 
 // === Type Definitions ===
 //
+#define NUM_OF(x)					(sizeof(x) / sizeof(*x))
 
 
 // === Constant Definitions ===
@@ -29,7 +30,7 @@
 // === Public API Functions ===
 //
 void SPI_Test_SendData (uint16_t cycle);
-void SPI_Test_ReceiveData (void);
+void SPI_Test_ReceiveData (uint16_t cycle);
 
 #endif /* SPI_TEST_H_ */
 

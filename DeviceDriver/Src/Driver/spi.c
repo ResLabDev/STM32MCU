@@ -220,13 +220,12 @@ void SPI_DeInit (SPI_RegDef_t *p_SPI)
 */
 void SPI_SendData (SPI_RegDef_t *p_SPI, uint8_t *p_TxBuffer, uint32_t len)
 {
-	// 1. If "len" is 0, exit from the function
-	if (0 == len)
+	if (0 == len)	// If "len" is 0, exit from the function
 	{
 		return;
 	}
 
-	while (len)
+	while (len --> 0)
 	{
 		// 1. Wait until Tx buffer is empty
 		while (SPI_GetFlagStatus(p_SPI, SPI_FLAG_TXE) == FLAG_RESET);
@@ -238,10 +237,10 @@ void SPI_SendData (SPI_RegDef_t *p_SPI, uint8_t *p_TxBuffer, uint32_t len)
 			if (len > 1)										// Avoid infinite loop in case of odd len value
 			{
 				p_SPI->DR = *((uint16_t *)p_TxBuffer);
+                (*(uint16_t **) &p_TxBuffer) ++;				// Increment 8 bit Tx buffer twice
                 len--;
-                p_TxBuffer++;
 			}
-			else
+			else	// Odd data length
             {
 				p_SPI->DR = (*((uint16_t *)p_TxBuffer)) & 0xff;	// Mask final character in case of odd len value
             }
@@ -250,10 +249,8 @@ void SPI_SendData (SPI_RegDef_t *p_SPI, uint8_t *p_TxBuffer, uint32_t len)
 		{
 			// 1 Byte Data Frame Format
 			p_SPI->DR = *p_TxBuffer;
+			p_TxBuffer++;
 		}
-
-		len--;
-		p_TxBuffer++;
 	}
 }
 
@@ -264,13 +261,47 @@ void SPI_SendData (SPI_RegDef_t *p_SPI, uint8_t *p_TxBuffer, uint32_t len)
  *
  * @param[in]	- *p_SPI: base address of the SPI peripheral
  * @param[out]	- *p_RxBuffer Pointer to the Rx buffer to be read
-  @param[in]	- len: Number of Bytes to be received
+ * @param[in]	- len: Number of Bytes to be received
  *
  * @return 		- none
  *
  * @note		- none
 */
-void SPI_ReceiveData (SPI_RegDef_t *p_SPI, uint8_t *p_RxBuffer, uint32_t len);
+void SPI_ReceiveData (SPI_RegDef_t *p_SPI, uint8_t *p_RxBuffer, uint32_t len)
+{
+	if (0 == len)	// If "len" is 0, exit from the function
+	{
+		return;
+	}
+
+	while (len --> 0)
+	{
+		// 1. Wait until Rx buffer is not empty
+		while (SPI_GetFlagStatus(p_SPI, SPI_FLAG_RXNE) == FLAG_RESET);
+
+		// 2. Check the DFF bit CR1
+		if (p_SPI->CR1 & (1 << SPI_CR1REG_DFF))
+		{
+			// 2 Bytes Data Frame Format
+			if (len > 1)										// Avoid infinite loop in case of odd len value
+			{
+				*((uint16_t *)p_RxBuffer) = p_SPI->DR;
+                (*(uint16_t **) &p_RxBuffer) ++;				// Increment 8 bit Rx buffer twice
+                len--;
+			}
+			else	// Odd data length
+            {
+				(*((uint16_t *)p_RxBuffer)) = p_SPI->DR & 0xff;	// Mask final character in case of odd len value
+            }
+		}
+		else
+		{
+			// 1 Byte Data Frame Format
+			*p_RxBuffer = p_SPI->DR & 0xff;
+		}
+	}
+
+}
 
 // SPI IRQ Handling
 //
