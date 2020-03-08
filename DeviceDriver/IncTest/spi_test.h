@@ -31,6 +31,8 @@
 //
 void SPI_Test_SendData (uint16_t cycle);
 void SPI_Test_ReceiveData (uint16_t cycle);
+void SPI_Test_SendDataIT (uint16_t cycle);
+void SPI_Test_ReceiveDataIT (void);
 
 #endif /* SPI_TEST_H_ */
 

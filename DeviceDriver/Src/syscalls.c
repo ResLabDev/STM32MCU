@@ -56,6 +56,9 @@
 #include <sys/time.h>
 #include <sys/times.h>
 
+// #define SWD_DEBUG
+
+#ifdef SWD_DEBUG
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////
 //					Implementation of printf like feature using ARM Cortex M3/M4/M7 ITM functionality
@@ -79,6 +82,8 @@ void ITM_SendChar (uint8_t ch)
 	// Write character to the port
 	ITM_STIMULUS_PORT0 = ch;
 }
+
+#endif	// SWD_DEBUG
 
 /* Variables */
 //#undef errno
@@ -132,8 +137,11 @@ __attribute__((weak)) int _write(int file, char *ptr, int len)
 
 	for (DataIdx = 0; DataIdx < len; DataIdx++)
 	{
-		// __io_putchar(*ptr++);
+#	ifdef SWD_DEBUG
 		ITM_SendChar(*ptr++);
+#	else
+		__io_putchar(*ptr++);
+#	endif	// SWD_DEBUG
 	}
 	return len;
 }

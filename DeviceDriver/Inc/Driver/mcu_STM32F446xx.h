@@ -10,6 +10,12 @@
 #include <stdint.h>
 
 // =============================
+// | Attributes				   |
+// =============================
+//
+#define _WEAK					__attribute__((weak))
+
+// =============================
 // | NVIC Interrupt Controller |
 // =============================
 //
@@ -234,15 +240,20 @@ typedef struct SYSCFG_RegDef
 #define SPI_CR1REG_DFF			11		// Data frame format
 #define SPI_CR1REG_BIDIMODE		15		// Bidirectional data mode enable
 #define SPI_CR2REG_SSOE			2		// SS output enable
-#define SPI_SR_RXNE				0		// Receive buffer not empty flag
-#define SPI_SR_TXE				1		// Transmit buffer empty flag
-#define SPI_SR_BSY				7		// Busy flag
+#define SPI_CR2REG_ERRIE		5		// Error interrupt enable
+#define SPI_CR2REG_RXNEIE		6		// RX buffer not empty interrupt enable
+#define SPI_CR2REG_TXEIE		7		// Tx buffer empty interrupt enable
+#define SPI_SRREG_RXNE			0		// Receive buffer not empty flag
+#define SPI_SRREG_OVR			6		// Overrun flag
+#define SPI_SRREG_TXE			1		// Transmit buffer empty flag
+#define SPI_SRREG_BSY			7		// Busy flag
 
 // === SPI Generic Definition ===
 //
-#define SPI_FLAG_RXNE			(1 << SPI_SR_RXNE)
-#define SPI_FLAG_TXE			(1 << SPI_SR_TXE)
-#define SPI_FLAG_BUSY			(1 << SPI_SR_BSY)
+#define SPI_FLAG_RXNE			(1 << SPI_SRREG_RXNE)
+#define SPI_FLAG_TXE			(1 << SPI_SRREG_TXE)
+#define SPI_FLAG_BUSY			(1 << SPI_SRREG_BSY)
+#define SPI_FLAG_OVR			(1 << SPI_SRREG_OVR)
 
 // === RCC Register Definition ===
 //
@@ -353,7 +364,11 @@ typedef struct SYSCFG_RegDef
 #define IRQ_NO_EXTI3			9
 #define IRQ_NO_EXTI4			10
 #define IRQ_NO_EXTI9_5			23
+#define IRQ_NO_SPI1				35
+#define IRQ_NO_SPI2				36
 #define IRQ_NO_EXTI15_10		40
+#define IRQ_NO_SPI3				51
+#define IRQ_NO_SPI4				84
 
 // === EXTI IRQ Priorities ===
 //

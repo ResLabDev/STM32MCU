@@ -401,7 +401,6 @@ void GPIO_TogglePin (GPIO_RegDef_t *p_GPIO, uint8_t pinNumber)
 }
 
 
-
 /*!
  * @fn			- GPIO_IRQHandling
  *

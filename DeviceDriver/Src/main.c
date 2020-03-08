@@ -10,13 +10,18 @@
 #include "gpio_test.h"
 #include "spi_test.h"
 
+extern void initialise_monitor_handles(void);
 
 int main(void)
 {
+	initialise_monitor_handles();
+
 	printf(" >> STM32 system is started.\n");
 
-	SPI_Test_ReceiveData (20);
+	SPI_Test_ReceiveDataIT();
 #if 0
+	SPI_Test_SendDataIT(20);
+	SPI_Test_ReceiveData (20);
 	SPI_Test_SendData(20);
 	GPIO_Test_ClockOut();
 	GPIO_Test_LedToggleNoIT(20);

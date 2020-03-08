@@ -38,7 +38,7 @@ static void Delay (uint32_t duration)
  *
  * @note		- none
 */
-static void SPI1_PinInit ()
+static void SPI1_PinInit (void)
 {
 	GPIO_Handle_t SPIpin;
 
@@ -78,7 +78,7 @@ static void SPI1_PinInit ()
  *
  * @note		- none
 */
-static void SPI2_PinInit ()
+static void SPI2_PinInit (void)
 {
 	GPIO_Handle_t SPIpin;
 
@@ -179,11 +179,10 @@ static void SPI2_Init (void)
 	SPI_Init(&SPIHandle);
 }
 
-
 // === Public API Functions ===
 //
 /*!
- * @fn			- SPI_Test_SendData8
+ * @fn			- SPI_Test_SendData
  *
  * @brief 		- Sending 1 Byte data on the SPI1 interface
  *
@@ -256,8 +255,8 @@ void SPI_Test_ReceiveData (uint16_t cycle)
 	printf(" $ Executing SPI Receive Byte Test...\n");
 
 	// 1. Configure SPI1 as master
-	SPI1_PinInit(ENABLE);			// Initialize GPIOA to SPI1 alternate function mode
-	SPI1_Init(ENABLE);
+	SPI1_PinInit();					// Initialize GPIOA to SPI1 alternate function mode
+	SPI1_Init(DISABLE);
 
 	// 2. Configure SPI2 as slave
 	SPI2_PinInit();					// Initialize GPIOB to SPI2 alternate function mode
@@ -288,5 +287,159 @@ void SPI_Test_ReceiveData (uint16_t cycle)
 	printf(" $ ... Finished SPI Receinving Byte Test.\n");
 }
 
+static SPI_Handle_t Spi1HandleIT;
+static SPI_Handle_t Spi2HandleIT;
+
+/*!
+ * @fn			- SPI_Test_SendDataIT
+ *
+ * @brief 		- Sending 1 Byte data on the SPI1 interface
+ *
+ * @param[in]	- cycle: Repetition value
+ * @param[out]	- none
+ *
+ * @return 		- none
+ *
+ * @note		- PIN Alternate Function Mode: AF5
+ * 				  Nucleo F446RE Board
+ * 				  	 PA4: SPI1_NSS		=> do not use
+ * 				  11 PA5: SPI1_SCK
+ * 				  13 PA6: SPI1_MISO	=> do not use
+ * 				  15 PA7: SPI1_MOSI
+ * 				   9 GND
+ *
+*/
+void SPI_Test_SendDataIT (uint16_t cycle)
+{
+	printf(" $ Executing SPI Sending Bytes Test...\n");
+
+	// Initialize GPIOA to SPI1 alternate function mode
+	Spi1HandleIT.p_SPIx = SPI1;
+	SPI1_PinInit();
+
+	// Initialize SPI
+	SPI1_Init(DISABLE);
+
+	// IRQ Configuration
+	IRQPriorityConfig(IRQ_NO_SPI1, 42);
+	IRQInterruptConfig(IRQ_NO_SPI1, ENABLE);
+
+	// Enable SPI1 Periphery
+	SPI_PeripheralControl(Spi1HandleIT.p_SPIx, ENABLE);
+
+	char buffer[] = "HELLO FROM SPI1";
+
+	while (cycle)
+	{
+		SPI_SendDataIT(&Spi1HandleIT, (uint8_t *)buffer, strlen(buffer));
+		Delay(500000);
+		printf(" $ Remaining cycle: %u.\n", cycle);
+		cycle--;
+	}
+
+	// Closing the communication
+	SPI_PeripheralControl(Spi1HandleIT.p_SPIx, DISABLE);
+
+	printf(" $ ... Finished SPI Sending Bytes Test.\n");
+}
+
+//
+/*!
+ * @fn			- SPI_Test_ReceiveDataIT
+ *
+ * @brief 		- Sending data on the SPI1 (master) interface and getting it on SPI2 (slave)
+ *
+ * @param[in]	- cycle: Repetition value
+ * @param[out]	- none
+ *
+ * @return 		- none
+ *
+ * @note		- PIN Alternate Function Mode: AF5
+ * 				  Nucleo F446RE Board
+ * 				  		SPI1	SPI2	SPI1 Nucleo		SPI2 Nucleo
+ * 				  NSS	PA4		PB12	CN7/32			CN10/16
+ * 				  SCK	PA5 	PB13	CN10/11			CN10/30
+ * 				  MISO	PA6		PB14	CN10/13			CN10/28
+ * 				  MOSI	PA7		PB15	CN10/15			CN10/26
+ * 				  GND					CN10/9
+ *
+*/
+void SPI_Test_ReceiveDataIT (void)
+{
+	printf(" $ Executing SPI Receive Byte Test...\n");
+
+	// 1. Configure SPI1 as master
+	Spi1HandleIT.p_SPIx = SPI1;
+	SPI1_PinInit();					// Initialize GPIOA to SPI1 alternate function mode
+	SPI1_Init(DISABLE);
+
+	// 2. Configure SPI2 as slave
+	Spi2HandleIT.p_SPIx = SPI2;
+	SPI2_PinInit();					// Initialize GPIOB to SPI2 alternate function mode
+	SPI2_Init();
+
+	// IRQ Configuration
+	IRQPriorityConfig(IRQ_NO_SPI1, 42);
+	IRQPriorityConfig(IRQ_NO_SPI2, 43);
+	IRQInterruptConfig(IRQ_NO_SPI1, ENABLE);
+	IRQInterruptConfig(IRQ_NO_SPI2, ENABLE);
+
+	// Enable SPIs
+	SPI_PeripheralControl(Spi1HandleIT.p_SPIx, ENABLE);
+	SPI_PeripheralControl(Spi2HandleIT.p_SPIx, ENABLE);
+
+	char buffer[] = "HELLO FROM SPI1";
+	uint8_t *p_buffer = (uint8_t *)buffer;
+	char receive = '0';
+	int len = strlen(buffer);
+
+	while (len --> 0)
+	{
+		SPI_SendDataIT(&Spi1HandleIT, p_buffer++, 1);
+		SPI_ReceiveDataIT(&Spi2HandleIT, (uint8_t *)(&receive), 1);
+		Delay(500000);
+		printf("%c\n", receive);
+	}
+
+	// Closing the communication
+	SPI_PeripheralControl(Spi1HandleIT.p_SPIx, DISABLE);
+	SPI_PeripheralControl(Spi2HandleIT.p_SPIx, DISABLE);
+
+	printf(" $ ... Finished SPI Receinving Byte Test.\n");
+}
+
+/*!
+ * @fn			- SPI1_IRQHandler
+ *
+ * @brief 		- ISR Handler for GPIO user button input (PC13)
+ *
+ * @param[in]	- none
+ * @param[out]	- none
+ *
+ * @return 		- none
+ *
+ * @note		- none
+*/
+void SPI1_IRQHandler (void)
+{
+	SPI_IRQHandling(&Spi1HandleIT);				// Calling IRQ Handler for SPI1
+}
+
+/*!
+ * @fn			- SPI2_IRQHandler
+ *
+ * @brief 		- ISR Handler for GPIO user button input (PC13)
+ *
+ * @param[in]	- none
+ * @param[out]	- none
+ *
+ * @return 		- none
+ *
+ * @note		- none
+*/
+void SPI2_IRQHandler (void)
+{
+	SPI_IRQHandling(&Spi2HandleIT);				// Calling IRQ Handler for SPI2
+}
 
 /*** EOF ***/

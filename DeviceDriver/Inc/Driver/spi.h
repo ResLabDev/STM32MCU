@@ -15,21 +15,27 @@
 //
 typedef struct SPI_Config
 {
-	uint8_t deviceMode;				// According to @SPI_DEVMODE
-	uint8_t busConfig;				// According to @SPI_BUSCONFIG
-	uint8_t sclkSpeed;				// According to @SPI_SPEED
-	uint8_t dff;					// According to @SPI_DFFMODE
-	uint8_t cpol;					// According to @SPI_CPOLMODE
-	uint8_t cpha;					// According to @SPI_CPHAMODE
-	uint8_t ssm;					// According to @SPI_SSMMODE
-	uint8_t ssi;					// According to @SPI_SSIMODE
-	uint8_t ssoe;					// According to @SPI_SSOEMODE
+	uint8_t deviceMode;				// @SPI_DEVMODE
+	uint8_t busConfig;				// @SPI_BUSCONFIG
+	uint8_t sclkSpeed;				// @SPI_SPEED
+	uint8_t dff;					// @SPI_DFFMODE
+	uint8_t cpol;					// @SPI_CPOLMODE
+	uint8_t cpha;					// @SPI_CPHAMODE
+	uint8_t ssm;					// @SPI_SSMMODE
+	uint8_t ssi;					// @SPI_SSIMODE
+	uint8_t ssoe;					// @SPI_SSOEMODE
 } SPI_Config_t;
 
 typedef struct SPI_Handle
 {
 	SPI_RegDef_t *p_SPIx;
 	SPI_Config_t SpiConfig;
+	uint8_t *p_TxBuffer;
+	uint8_t *p_RxBuffer;
+	uint8_t TxLen;
+	uint8_t RxLen;
+	uint8_t TxState;				// @SPI_API_STATE
+	uint8_t RxState;				// @SPI_API_STATE
 } SPI_Handle_t;
 
 
@@ -107,6 +113,22 @@ in a multimaster environment.
 #define SPI_SSOEMODE_DI			0
 #define SPI_SSOEMODE_EN			1
 
+/*
+ * @SPI_API_STATE
+ * The possible SPI application states
+ */
+#define SPI_ST_READY			0
+#define SPI_ST_BUSY_TX			1
+#define SPI_ST_BUSY_RX			2
+
+/*
+ * @SPI_API_EVENTS
+ * The possible SPI application events
+ */
+#define SPI_EVENT_TX_CMPLT		0		// SPI Tx transmission complete
+#define SPI_EVENT_RX_CMPLT		1		// SPI Rx reception complete
+#define SPI_EVENT_OVR_CMPLT		2		// SPI OVR overrun error occurred complete
+
 
 // === API Functions ===
 //
@@ -120,11 +142,23 @@ void SPI_DeInit (SPI_RegDef_t *p_SPI);
 //
 void SPI_SendData (SPI_RegDef_t *p_SPI, uint8_t *p_TxBuffer, uint32_t len);
 void SPI_ReceiveData (SPI_RegDef_t *p_SPI, uint8_t *p_RxBuffer, uint32_t len);
-void SPI_PeripheralControl (SPI_RegDef_t *p_SPIx, uint8_t enable);
+uint8_t SPI_SendDataIT (SPI_Handle_t *p_SpiHandle, uint8_t *p_TxBuffer, uint32_t len);
+uint8_t SPI_ReceiveDataIT (SPI_Handle_t *p_SpiHandle, uint8_t *p_RxBuffer, uint32_t len);
 
 // SPI IRQ Handling
 //
-void SPI_IRQHandling (SPI_Handle_t *p_SPIhandler);
+void SPI_IRQHandling (SPI_Handle_t *p_SpiHandle);
+
+// SPI Control
+//
+void SPI_PeripheralControl (SPI_RegDef_t *p_SPIx, uint8_t enable);
+void SPI_CloseTransmission (SPI_Handle_t *p_SpiHandle);
+void SPI_CloseReception (SPI_Handle_t *p_SpiHandle);
+void SPI_ClearOvrFlag (SPI_RegDef_t *p_Spi);
+
+// SPI Application Callback
+//
+void SPI_API_EventCallback(SPI_Handle_t *p_SpiHandle, uint8_t appEvent);
 
 #endif /* SPI_H_ */
 
