@@ -1,0 +1,10 @@
+.metadata/*.*
+*.cfg
+RemoteSystemsTempFiles/*
+DeviceDriver/.settings/*
+DeviceDriver/*.launch
+DeviceDriver/Debug/*
+DeviceDriver/Startup/*
+DeviceDriver/.cproject
+DeviceDriver/.project
+DeviceDriver/*.ld
