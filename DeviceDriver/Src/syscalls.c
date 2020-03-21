@@ -56,7 +56,7 @@
 #include <sys/time.h>
 #include <sys/times.h>
 
-// #define SWD_DEBUG
+#define SWD_DEBUG
 
 #ifdef SWD_DEBUG
 

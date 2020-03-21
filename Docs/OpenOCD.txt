@@ -1,0 +1,13 @@
+OpenOCD Debugger and Semi-hosting
+======================================
+Set the linker arguments (Linker/Miscellaneous/Other flags)
+-specs=rdimon.specs -lc -lrdimon
+
+Add semi-hosting run command
+monitor arm semihosting enable 
+
+Add the below function call to main.c 
+extern void initialise_monitor_handles(void);
+initialise_monitor_handles(void);
+
+Exclude "syscalls.c" from build

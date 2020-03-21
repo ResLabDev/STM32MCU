@@ -18,7 +18,7 @@ int main(void)
 
 	printf(" >> STM32 system is started.\n");
 
-	SPI_Test_ReceiveDataIT();
+	SPI_Test_SendData(20);
 #if 0
 	SPI_Test_SendDataIT(20);
 	SPI_Test_ReceiveData (20);
